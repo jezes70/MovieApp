@@ -268,3 +268,51 @@ body::before {
 	display: inline-block;
 }
 
+
+.div-container{
+  height: 350px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-body {
+  flex-grow: 1;
+}
+
+.card-text {
+  overflow-y: auto;
+}
+
+.card img {
+  height: 150px;
+  object-fit: cover;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+label {
+  color: #fff;
+}
+
+#add-movie-form,
+#update-movie-form {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  color: #cec5c5;
+  font-size: large;
+  transform: translate(-50%, -50%);
+  width: 35%;
+  background-color: #212121;
+  padding: 20px;
+  z-index: 1;
+}
+

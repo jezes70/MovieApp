@@ -32,14 +32,14 @@
     <form method="POST" action="/users/register">
       <div class="user-box">
          <input type="text" name="fullName">
-        <label>fullname</label>
+        <label>fullName</label>
       </div>
       <% if(locals.error) { %> 
-        <% if(error === 'fullname is not allowed to be empty'){ %>
+        <% if(error === 'fullName is not allowed to be empty'){ %>
           <div style="
           color: red;
           font-size: 12px;
-          ">fullname is not allowed to be empty
+          ">fullName is not allowed to be empty
           </div>
         <% } %>
       <% } %>
@@ -66,14 +66,14 @@
 
       <div class="user-box">
       <% if(locals.error){ %>
-        <% if(error === 'userName is not allowed to be empty'){ %>
+        <% if(error === 'username is not allowed to be empty'){ %>
           <div style="
           color: red;
           font-size: 12px;
           ">Username is not allow to be empty</div>
         <% } %>
       <% } %> 
-         <input type="text" name="userName">
+         <input type="text" name="username">
         <label>Username</label>
       </div>
       

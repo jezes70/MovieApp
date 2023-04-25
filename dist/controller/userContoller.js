@@ -11,27 +11,30 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const jwtsecret = process.env.JWT_SECRET;
 const Register = async (req, res) => {
     try {
-        const { email, fullname, username, password, confirm_password } = req.body;
-        const validationResult = utils_1.registerUserSchema.validate(req.body);
-        if (validationResult.error) {
-            return res.render("Register", {
-                error: validationResult.error.details[0].message,
-            });
-        }
+        const { email, fullName, username, password, confirm_password } = req.body;
+        // const validationResult = registerUserSchema.validate(req.body);
+        // if (validationResult.error) {
+        //   // return res.render("Register", {
+        //   //   error: validationResult.error.details[0].message,
+        //   // });
+        //   return res.status(400).json({error: validationResult.error.details[0].message})
+        // }
         const hashedPassword = await bcryptjs_1.default.hash(password, 12);
         const existingUser = await userModel_1.UserModel.findOne({ email });
         if (existingUser) {
-            return res.render("Register", { error: "Email already exists" });
+            // return res.render("Register", { error: "Email already exists" });
+            return res.status(400).json({ error: "Email already exists" });
         }
         const newUser = await userModel_1.UserModel.create({
-            fullname,
+            fullName,
             username,
             email,
             password: hashedPassword,
         });
         const user = await userModel_1.UserModel.findOne({ email });
         if (!user) {
-            return res.render("Register", { error: "User not found" });
+            // return res.render("Register", { error: "User not found" });
+            return res.status(400).json({ error: "User not found" });
         }
         const { _id } = user;
         const signatureToken = jsonwebtoken_1.default.sign({ id: _id }, jwtsecret, {
@@ -41,7 +44,14 @@ const Register = async (req, res) => {
             httpOnly: true,
             maxAge: 30 * 60 * 1000,
         });
-        return res.redirect("/login");
+        // return res.redirect("/login");
+        return res.status(201).json({
+            fullName,
+            username,
+            email,
+            password: hashedPassword,
+            signatureToken
+        });
     }
     catch (err) {
         console.log(err);
@@ -53,13 +63,13 @@ const Login = async (req, res) => {
         const { email, password } = req.body;
         const validationResult = utils_1.loginUserSchema.validate(req.body, utils_1.variables);
         if (validationResult.error) {
-            return res.render("login", {
+            return res.render("Login", {
                 error: validationResult.error.details[0].message,
             });
         }
         const user = await userModel_1.UserModel.findOne({ email });
         if (!user) {
-            return res.render("login", {
+            return res.render("Login", {
                 error: "Invalid email or password",
             });
         }
@@ -74,7 +84,7 @@ const Login = async (req, res) => {
             return res.redirect("/dashboard");
         }
         else {
-            return res.render("login", {
+            return res.render("Login", {
                 error: "Invalid email or password",
             });
         }

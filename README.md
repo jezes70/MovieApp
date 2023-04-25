@@ -29,4 +29,3 @@
 
 # 2. Mongo Aggregation Exercise.
 - Go through the readme file in the Folder `MongoAggregation`
-PQr45tVlZzImzsJq

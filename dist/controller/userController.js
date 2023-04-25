@@ -5,220 +5,212 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Logout = exports.Login = exports.Register = void 0;
 const userModel_1 = require("../model/userModel");
-const uuid_1 = require("uuid");
+const utils_1 = require("../utils/utils");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const utils_1 = require("../utils/utils");
-const jwtSecret = process.env.JWT_SECRET;
-/* ========================= USER API ================================ */
-// export const Register = async (req: Request | any, res: Response) => {
-//     try {
-//         const {email, fullName, userName, password, confirm_password} = req.body;
-//         const uuid = uuid4();
-//         //validate with Joi email and fullName
-//         const validationResult = registerUserSchema.validate(req.body,options)
-//         if (validationResult.error){
-//             let array = [];
-//             array.push(validationResult.error.details[0].message)
-//         //     return res.status(400).json({error:validationResult.error.details[0].
-//         // message})
-//         return res.render("Register",{error:validationResult.error.details[0].
-//              message});
-//         }
-//         //generate salt and hash password
-//         const passwordHash = await bcrypt.hash(password , 10)
-//         //create user
-//         //--check if the user already exists
-//         const user = await UserInstance.findOne({
-//             where: {email:email}
-//         })
-//         if (!user){
-//         let newUser = await UserInstance.create({
-//             id: uuid,
-//             email,
-//             fullName,
-//             userName,
-//             password: passwordHash
-//         })
-//         //generate token for user
-//         const user = await UserInstance.findOne({
-//             where: {email:email}
-//         })  as unknown as {[key: string]:string}
-//         const { id } = user
-//         const token = jwt.sign({id},jwtsecret,{expiresIn:"30mins"})
-//         res.cookie('token',token, {httpOnly:true, maxAge:30 * 60 * 1000})
-//         //res.cookie('token',token, {httpOnly:true, maxAge:30 * 60 * 1000})
-//         //otp
-//         //Email
-//         // return res.status(201).json({
-//         //     msg: 'user created successfully',
-//         //     newUser,
-//         //     token
-//         // })
-//         return res.redirect("/login");
-//         }
-//     res.status(409).json({
-//     error: "email already taken"
-//     })
-//     }catch(err){
-//         console.log(err)
-//         res.status(500).json({error:"Internal server error"})
-//     }
-// }
-// export const Login =  async (req: Request | any, res: Response) => {
-//     try{
-//         const {email,  password} = req.body;
-//         //validate with Joi email and fullName
-//         const validationResult = loginUserSchema.validate(req.body, options)
-//         if (validationResult.error){
-//             return res.status(400).json({error:validationResult.error.details[0].
-//         message})
-//         }
-//      // Generate token for user
-//      const User = await UserInstance.findOne({
-//         where:{email:email}
-//      })  as unknown as {[key: string]:string}
-//      const { id } = User
-//      const token = jwt.sign({id},jwtsecret,{expiresIn:"30d"})
-//      res.cookie('token',token, {httpOnly:true, maxAge:30 * 24 * 60 * 60 * 1000})
-//      const validUser = await bcrypt.compare(password, User.password)
-//      if(validUser){
-//         // return res.status(201).json({
-//         //     msg: "You have successful logged in",
-//         //     User,
-//         //     token,
-//         // })
-//         return res.redirect("/")
-//      }
-//         return res.status(400).json({error:"Invalid credentials"})
-//     }
-//     catch(err){
-//         console.log(err)
-//         res.status(500).json({error:"Internal server error"})
-//     }
-// }
-// export const getUserAndMovies = async (req: Request | any, res: Response) => {
-//     try{
-//         //sequelize findAll or findAndCountAll
-//         //const getAllMovies = await MovieInstance.findAll();
-//      const getAllUser = await UserInstance.findAndCountAll(
-//        {
-//          include:[
-//             {
-//                 model: MovieInstance,
-//                 as: 'movies',
-//             }
-//          ]
-//        }
-//      );
-//      return res.status(200).json({
-//          msg: 'You have successfully retrieve all movies',
-//          count: getAllUser.count,
-//         users: getAllUser.rows,
-//       })
-//   }catch(err){
-//     console.log(err)
-//   }
-// }
-/* =============================== EJS API ======================== */
+const jwtsecret = process.env.JWT_SECRET;
 const Register = async (req, res) => {
     try {
-        const { email, fullName, userName, password, confirm_password } = req.body;
-        const uuid = (0, uuid_1.v4)();
-        //validate with Joi email and fullName
-        const validationResult = utils_1.registerUserSchema.validate(req.body, utils_1.options);
+        const { email, fullName, username, password, confirm_password } = req.body;
+        const validationResult = utils_1.registerUserSchema.validate(req.body);
         if (validationResult.error) {
             return res.render("Register", {
                 error: validationResult.error.details[0].message,
             });
+            // return res.status(400).json({error: validationResult.error.details[0].message})
         }
-        //generate salt and hash password
-        const passwordHash = await bcryptjs_1.default.hash(password, 10);
-        //create user
-        //--check if the user already exists
-        const user = await userModel_1.UserModel.findOne({
-            where: { email: email },
+        const hashedPassword = await bcryptjs_1.default.hash(password, 12);
+        const existingUser = await userModel_1.UserModel.findOne({ email });
+        if (existingUser) {
+            return res.render("Register", { error: "Email already exists" });
+            // return res.status(400).json({error: "Email already exists"})
+        }
+        const newUser = await userModel_1.UserModel.create({
+            fullName,
+            username,
+            email,
+            password: hashedPassword,
         });
+        const user = await userModel_1.UserModel.findOne({ email });
         if (!user) {
-            let newUser = await userModel_1.UserModel.create({
-                id: uuid,
-                fullName,
-                email,
-                userName,
-                password: passwordHash,
-            });
-            //generate token for user
-            const User = (await userModel_1.UserModel.findOne({
-                where: { email: email },
-            }));
-            const { id } = User;
-            const token = jsonwebtoken_1.default.sign({ id }, jwtSecret, { expiresIn: "30mins" });
-            //res.cookie('token',token, {httpOnly:true, maxAge:30 * 60 * 1000})
-            //otp
-            //Email
-            return res.redirect("/login");
+            return res.render("Register", { error: "User not found" });
+            // return res.status(400).json({error: "User not found"})
         }
-        return res.render("Register", {
-            error: "Email is already taken",
+        const { _id } = user;
+        const signatureToken = jsonwebtoken_1.default.sign({ id: _id }, jwtsecret, {
+            expiresIn: "30mins",
         });
+        res.cookie("token", signatureToken, {
+            httpOnly: true,
+            maxAge: 30 * 60 * 1000,
+        });
+        return res.redirect("/login");
+        // return res.status(201).json({
+        //   fullName,
+        //   username,
+        //   email,
+        //   password: hashedPassword,
+        //   signatureToken
+        // })
     }
-    catch (error) {
-        console.log(error);
+    catch (err) {
+        console.log(err);
     }
 };
 exports.Register = Register;
 const Login = async (req, res) => {
     try {
         const { email, password } = req.body;
-        //validate with Joi email and fullName
-        const validationResult = utils_1.loginUserSchema.validate(req.body, utils_1.options);
+        const validationResult = utils_1.loginUserSchema.validate(req.body, utils_1.variables);
         if (validationResult.error) {
             return res.render("Login", {
                 error: validationResult.error.details[0].message,
             });
         }
-        // Generate token for user
-        const User = (await userModel_1.UserModel.findOne({
-            where: { email: email },
-        }));
-        const { id } = User;
-        const token = jsonwebtoken_1.default.sign({ id }, jwtSecret, { expiresIn: "30d" });
-        res.cookie("token", token, { httpOnly: true, maxAge: 30 * 60 * 60 * 1000 });
-        const validUser = await bcryptjs_1.default.compare(password, User.password);
-        if (validUser) {
+        const user = await userModel_1.UserModel.findOne({ email });
+        if (!user) {
+            return res.render("Login", {
+                error: "Invalid email or password",
+            });
+        }
+        const { id } = user;
+        const signatureToken = jsonwebtoken_1.default.sign({ id }, jwtsecret, { expiresIn: "30d" });
+        res.cookie("token", signatureToken, {
+            httpOnly: true,
+            maxAge: 30 * 24 * 60 * 60 * 1000,
+        });
+        const isMatch = await bcryptjs_1.default.compare(password, user.password);
+        if (isMatch) {
             return res.redirect("/dashboard");
         }
-        res.render("Login", {
-            error: "Invalid email/password",
-        });
+        else {
+            return res.render("Login", {
+                error: "Invalid email or password",
+            });
+        }
     }
     catch (err) {
-        console.log(err);
-        //res.status(500).json({Error:"Internal server error"})
+        console.error(err);
     }
 };
 exports.Login = Login;
 const Logout = async (req, res) => {
     res.clearCookie("token");
-    res.redirect("/login");
+    res.redirect("/");
 };
 exports.Logout = Logout;
-// export const getUserAndMovies = async (req: Request | any, res: Response) => {
+// export const getUserAndMovies = async (req: Request, res: Response) => {
 //   try {
-//     //sequelize findAll or findAndCountAll
-//     //const getAllMovies = await MovieInstance.findAll();
-//     const getAllUser = await UserModel.findAndCountAll({
+//     const getAllUserMovies = await UserInstance.findAndCountAll({
 //       include: [
 //         {
-//           model: MovieModel,
+//           model: MovieInstance,
 //           as: "movies",
 //         },
 //       ],
 //     });
 //     return res.status(200).json({
-//       msg: "You have successfully retrieve all movies",
-//       count: getAllUser.count,
-//       users: getAllUser.rows,
+//       msg: "All data retrieved successfully",
+//       count: getAllUserMovies.count,
+//       users: getAllUserMovies.rows,
+//     });
+//   } catch (err) {
+//     console.log(err);
+//   }
+// };
+/* ==================USER API=================== */
+// export const Register = async (req: Request, res: Response) => {
+//   try {
+//     const { fullname, username, email, password, confirm_password } = req.body;
+//     const iduuid = UUIDV4();
+//     const validationResult = registerUserSchema.validate(req.body, variables);
+//     if (validationResult.error) {
+//       return res
+//         .status(400)
+//         .json({ Error: validationResult.error.details[0].message });
+//     }
+//     const hidePassword = await bcrypt.hash(password, 12);
+//     const user = await UserInstance.findOne({
+//       where: { email: email },
+//     });
+//     if (!user) {
+//       let newUser = await UserInstance.create({
+//         id: iduuid,
+//         fullname,
+//         username,
+//         email,
+//         password: hidePassword,
+//       });
+//       const User = (await UserInstance.findOne({
+//         where: { email: email },
+//       })) as unknown as { [key: string]: string };
+//       const { id } = User;
+//       const signatureToken = jwt.sign({ id }, jwtsecret, {
+//         expiresIn: "30mins",
+//       });
+//       res.cookie("token", signatureToken, {
+//         httpOnly: true,
+//         maxAge: 30 * 60 * 1000,
+//       });
+//       return res.status(200).json({
+//         msg: "User registered successfully",
+//       });
+//     }
+//   } catch (err) {
+//     console.log(err);
+//     res.status(500).json({ Error: "Internal server error" });
+//   }
+// };
+// export const Login = async (req: Request, res: Response) => {
+//   try {
+//     const { email, password } = req.body;
+//     const validationResult = loginUserSchema.validate(req.body, variables);
+//     if (validationResult.error) {
+//       return res
+//         .status(400)
+//         .json({ Error: validationResult.error.details[0].message });
+//     }
+//     const User = (await UserInstance.findOne({
+//       where: { email: email },
+//     })) as unknown as { [key: string]: string };
+//     const { id } = User;
+//     const signatureToken = jwt.sign({ id }, jwtsecret, { expiresIn: "30d" });
+//     res.cookie("token", signatureToken, {
+//       httpOnly: true,
+//       maxAge: 30 * 24 * 60 * 60 * 1000,
+//     });
+//     const regUser = await bcrypt.compare(password, User.password);
+//     if (regUser) {
+//       return res.status(201).json({
+//         msg: "Logged in successfully",
+//         signatureToken,
+//       });
+//     }
+//     return res.status(400).json({ Error: "Invalid email or password" });
+//   } catch (err) {
+//     console.log(err);
+//   }
+// };
+// export const Logout = async (req: Request, res: Response) => {
+//   res.clearCookie("token");
+//   res.status(201).json({
+//     msg: "Logged out successfully",
+//   });
+// };
+// export const getUserAndMovies = async (req: Request, res: Response) => {
+//   try {
+//     const getAllUserMovies = await UserInstance.findAndCountAll({
+//       include: [
+//         {
+//           model: MovieInstance,
+//           as: "movies",
+//         },
+//       ],
+//     });
+//     return res.status(200).json({
+//       msg: "All data retrieved successfully",
+//       count: getAllUserMovies.count,
+//       users: getAllUserMovies.rows,
 //     });
 //   } catch (err) {
 //     console.log(err);

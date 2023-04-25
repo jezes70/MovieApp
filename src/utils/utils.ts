@@ -1,10 +1,10 @@
 import Joi from 'joi'
 
 export const registerUserSchema = Joi.object().keys({
-    fullname: Joi.string().required(),
+    fullName: Joi.string().required(),
     username: Joi.string().required(), 
     email: Joi.string().trim().lowercase().required(), 
-    password: Joi.string().regex(/^[a-zA-Z0-9]{3,8}$/).required(), 
+    password: Joi.string().regex(/^[a-zA-Z0-9]{3,8}$/i).required(),
     // .label('Password').messages({'any.only': '{#label} must contain only alphabets and numbers' }),
     confirm_password: Joi.any().equal(Joi.ref('password')).required().label('Confirm password').messages({'any.only': '{#label} does not match' })
 })

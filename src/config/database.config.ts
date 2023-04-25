@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:5001/movieverse';
+const MONGODB_URI = process.env.MONGO_URI || 'mongodb+srv://jezes70:TBN8G3fIB5NIcXkM@cluster0.hm154wl.mongodb.net/test'
 
 const db = async (): Promise<void> => {
   try {

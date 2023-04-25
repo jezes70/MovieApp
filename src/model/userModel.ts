@@ -9,7 +9,7 @@ import { MovieDocument } from "../model/moviesModel";
 // }
 
 export interface UserInstance extends mongoose.Document {
-  fullname: string;
+  fullName: string;
   username: string;
   email: string;
   password: string;
@@ -17,7 +17,7 @@ export interface UserInstance extends mongoose.Document {
 }
 
 const UserSchema = new mongoose.Schema<UserInstance>({
-  fullname: {
+  fullName: {
     type: String,
     required: true,
   },

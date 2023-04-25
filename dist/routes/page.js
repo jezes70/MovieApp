@@ -18,7 +18,7 @@ router.get("/login", (req, res, next) => {
 router.get("/", async (req, res, next) => {
     try {
         const page = parseInt(req.query.page) || 1; // parse page number from query param or default to 1
-        const limit = 10; // set limit of movies per page to 5
+        const limit = 6;
         const skip = (page - 1) * limit; // calculate number of movies to skip based on page and limit
         const movieCount = await moviesModel_1.MovieModel.countDocuments(); // get total number of movies in the collection
         const totalPages = Math.ceil(movieCount / limit); // calculate total number of pages
